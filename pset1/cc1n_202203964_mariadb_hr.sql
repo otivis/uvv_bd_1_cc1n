@@ -1,4 +1,4 @@
-CREATE UER 'otavio@localhost' 
+CREATE USER 'otavio@localhost' 
 IDENTIFIED BY 'senhaboa';
 
 GRANT ALL PRIVILEGES ON * . * TO 'otavio'@'localhost';
@@ -63,11 +63,11 @@ CREATE UNIQUE INDEX ak_departamentos ON departamentos (nome);
 
 CREATE TABLE empregados (
 id_empregado INT NOT NULL,
-nome VARCHAR(75) NOT NULL DEFAULT " ",
-email VARCHAR(35) NOT NULL DEFAULT " ",
+nome VARCHAR(75) NOT NULL,
+email VARCHAR(35) NOT NULL ,
 telefone VARCHAR(20),
 data_contratacao DATE NOT NULL,
-id_cargo VARCHAR(10) NOT NULL DEFAULT " ",
+id_cargo VARCHAR(10) NOT NULL ,
 salario DECIMAL(8,2),
 comissao DECIMAL(4,2),
 id_departamento INT,
@@ -81,7 +81,7 @@ CREATE TABLE historico_cargos (
 data_inicial DATE NOT NULL,
 id_empregado INT NOT NULL,
 data_final DATE NOT NULL,
-id_cargo VARCHAR(10) NOT NULL DEFAULT " ",
+id_cargo VARCHAR(10) NOT NULL,
 id_departamento INT NOT NULL
 );
 
