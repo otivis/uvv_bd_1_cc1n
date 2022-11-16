@@ -32,8 +32,11 @@ CREATE TABLE cargos (
                 cargo VARCHAR(35) NOT NULL,
                 salario_minimo NUMERIC(8,2),
                 salario_maximo NUMERIC(8,2),
-                CONSTRAINT cargos_pk PRIMARY KEY (id_cargo)
+                CONSTRAINT pk_cargos PRIMARY KEY (id_cargo)
 );
+
+CREATE UNIQUE INDEX cargos_idx ON cargos (cargo);
+
 COMMENT ON TABLE cargos IS 'Relação de cargos
 Atributos: nome, salario max e min e codigo';
 COMMENT ON COLUMN cargos.id_cargo IS 'Chave estrangeira de empregados, e chave primaria da relacao';
@@ -42,30 +45,32 @@ COMMENT ON COLUMN cargos.salario_minimo IS 'Atributo salario base';
 COMMENT ON COLUMN cargos.salario_maximo IS 'Atributo salario maximo';
 
 
-CREATE UNIQUE INDEX cargos_idx
- ON hr.cargos	
- ( cargo );
+
 
 CREATE TABLE regioes (
                 id_regiao INTEGER NOT NULL,
                 nome VARCHAR(25) NOT NULL,
                 CONSTRAINT regioes_pk PRIMARY KEY (id_regiao)
+                
 );
+
+CREATE UNIQUE INDEX regioes_ak ON regioes (nome);
 COMMENT ON TABLE regioes IS 'Tabela de regioes, contendo codigo e nome das regioes.';
 COMMENT ON COLUMN regioes.id_regiao IS 'PK da tabela de regioes, utilizada como FK na tabela de paises.';
 COMMENT ON COLUMN regioes.nome IS 'Chave secundaria da tabela de regioes; correspondendo tambem a uma unica linha da tabela.';
 
 
-CREATE UNIQUE INDEX regioes_ak
- ON hr.regioes
- ( nome );
+
 
 CREATE TABLE paises (
                 id_pais CHAR(2) NOT NULL,
                 nome VARCHAR(50) NOT NULL,
                 id_regiao INTEGER NOT NULL,
-                CONSTRAINT paises_pk PRIMARY KEY (id_pais)
+                CONSTRAINT pk_paises PRIMARY KEY (id_pais)
 );
+
+
+CREATE UNIQUE INDEX paises_ak ON paises (nome);
 COMMENT ON TABLE paises IS 'Relacao paises com atributo de nome, codigo e codigo das regioes do pais. onta o endereco com a relacao de localizacoes e a tabela de regioes, relaciona com a tabela de localizacoes atraves da FK no atributo id_pais na relacao de localizacoes
 ';
 COMMENT ON COLUMN paises.id_pais IS 'Chave primaria da relacao usada como chave estrangeira da relacao de localizacaoes.';
@@ -73,9 +78,7 @@ COMMENT ON COLUMN paises.id_pais IS 'Chave primaria da relacao usada como chave 
 COMMENT ON COLUMN paises.id_regiao IS 'Chave estrangeira de regioes		';
 
 
-CREATE UNIQUE INDEX paises_ak
- ON hr.paises
- ( nome );
+
 
 CREATE TABLE localizacoes (
                 id_localizacao INTEGER NOT NULL,
@@ -84,7 +87,7 @@ CREATE TABLE localizacoes (
                 cidade VARCHAR(50),
                 uf VARCHAR(25),
                 id_pais CHAR(2) NOT NULL,
-                CONSTRAINT localizacoes_pk PRIMARY KEY (id_localizacao)
+                CONSTRAINT pk_localizacoes PRIMARY KEY (id_localizacao)
 );
 COMMENT ON TABLE localizacoes IS 'Relacao localizacoes
 Atributos: nome, codigo, cidade, codigo estado, codigo pais. Com Chave estrangeira do id da relacao de departamentos';
@@ -101,8 +104,9 @@ CREATE TABLE departamentos (
                 nome VARCHAR(50) NOT NULL,
                 id_localizacao INTEGER NOT NULL,
                 id_gerente INTEGER,
-                CONSTRAINT departamentos_pk PRIMARY KEY (id_departamento)
+                CONSTRAINT pk_dep PRIMARY KEY (id_departamento)
 );
+CREATE UNIQUE INDEX departamentos_ak ON departamentos (nome);
 COMMENT ON TABLE departamentos IS 'Relacao departamentos
    Atributos: nome, codigo, e chaves estrangeiras de id(empregados e localizacaoes)';
 COMMENT ON COLUMN departamentos.id_departamento IS 'Chave primaria da relacao';
@@ -111,9 +115,7 @@ COMMENT ON COLUMN departamentos.id_localizacao IS 'Chave estrangeira da localiza
 COMMENT ON COLUMN departamentos.id_gerente IS 'Chave estrangeira de empregados';
 
 
-CREATE UNIQUE INDEX departamentos_ak
- ON hr.departamentos
- ( nome );
+
 
 CREATE TABLE empregados (
                 id_empregado INTEGER NOT NULL,
@@ -126,8 +128,10 @@ CREATE TABLE empregados (
                 comissao NUMERIC(4,2),
                 id_departamento INTEGER,
                 id_supervisor INTEGER,
-                CONSTRAINT empregados_pk PRIMARY KEY (id_empregado)
+                CONSTRAINT pk_emp PRIMARY KEY (id_empregado)
 );
+
+CREATE UNIQUE INDEX empregados_ak ON empregados  (email);
 COMMENT ON TABLE empregados IS 'Relação empregados,
    Atributos: email, nome, codigo, data contracao, telefone, salario e comissao;';
 COMMENT ON COLUMN empregados.id_empregado IS 'Chave primaria Tabela';
@@ -142,9 +146,7 @@ COMMENT ON COLUMN empregados.id_departamento IS 'Chave estrangeira de departamen
 COMMENT ON COLUMN empregados.id_supervisor IS 'Chave estrangeira de auto-relacionamento';
 
 
-CREATE UNIQUE INDEX empregados_ak
- ON hr.empregados
- ( email );
+
 
 CREATE TABLE historico_cargos (
                 data_inicial DATE NOT NULL,
@@ -152,7 +154,7 @@ CREATE TABLE historico_cargos (
                 data_final VARCHAR NOT NULL,
                 id_cargo VARCHAR(10) NOT NULL,
                 id_departamento INTEGER NOT NULL,
-                CONSTRAINT historico_cargos_pk PRIMARY KEY (data_inicial, id_empregado)
+                CONSTRAINT pk_his PRIMARY KEY (data_inicial, id_empregado)
 );
 COMMENT ON TABLE historico_cargos IS 'Relação de histórico de cargos dos funcionarios';
 COMMENT ON COLUMN historico_cargos.data_inicial IS 'Chave primaria da relacao';
@@ -161,81 +163,62 @@ COMMENT ON COLUMN historico_cargos.id_cargo IS 'Chave estrangeira de empregados 
 COMMENT ON COLUMN historico_cargos.id_departamento IS 'Chave primaria da relacao';
 
 
-ALTER TABLE empregados ADD CONSTRAINT cargos_empregados_fk
-FOREIGN KEY (id_cargo)
+ALTER TABLE empregados ADD CONSTRAINT fk_empregados_cargos FOREIGN KEY (id_cargo)
 REFERENCES cargos (id_cargo)
 ON DELETE NO ACTION
 ON UPDATE NO ACTION
 NOT DEFERRABLE;
 
-ALTER TABLE historico_cargos ADD CONSTRAINT cargos_historico_cargos_fk
-FOREIGN KEY (id_cargo)
+ALTER TABLE historico_cargos ADD CONSTRAINT fk_his_cargos FOREIGN KEY (id_cargo)
 REFERENCES cargos (id_cargo)
 ON DELETE NO ACTION
 ON UPDATE NO ACTION
 NOT DEFERRABLE;
 
-ALTER TABLE paises ADD CONSTRAINT regioes_paises_fk
-FOREIGN KEY (id_regiao)
+ALTER TABLE paises ADD CONSTRAINT fk_regioes_pais FOREIGN KEY (id_regiao)
 REFERENCES regioes (id_regiao)
 ON DELETE NO ACTION
 ON UPDATE NO ACTION
 NOT DEFERRABLE;
 
-ALTER TABLE localizacoes ADD CONSTRAINT paises_localizacoes_fk
-FOREIGN KEY (id_pais)
+ALTER TABLE localizacoes ADD CONSTRAINT fk_localizacoes_pais FOREIGN KEY (id_pais)
 REFERENCES paises (id_pais)
 ON DELETE NO ACTION
 ON UPDATE NO ACTION
 NOT DEFERRABLE;
 
-ALTER TABLE departamentos ADD CONSTRAINT localizacoes_departamentos_fk
-FOREIGN KEY (id_localizacao)
+ALTER TABLE departamentos ADD CONSTRAINT fk_departamentos_dep FOREIGN KEY (id_localizacao)
 REFERENCES localizacoes (id_localizacao)
 ON DELETE NO ACTION
 ON UPDATE NO ACTION
 NOT DEFERRABLE;
 
-ALTER TABLE empregados ADD CONSTRAINT departamentos_empregados_fk
-FOREIGN KEY (id_departamento)
+ALTER TABLE empregados ADD CONSTRAINT fk_dep_emp FOREIGN KEY (id_departamento)
 REFERENCES departamentos (id_departamento)
 ON DELETE NO ACTION
 ON UPDATE NO ACTION
 NOT DEFERRABLE;
 
-ALTER TABLE historico_cargos ADD CONSTRAINT departamentos_historico_cargos_fk
-FOREIGN KEY (id_departamento)
+ALTER TABLE historico_cargos ADD CONSTRAINT fk_his_dep FOREIGN KEY (id_departamento)
 REFERENCES departamentos (id_departamento)
 ON DELETE NO ACTION
 ON UPDATE NO ACTION
 NOT DEFERRABLE;
 
-ALTER TABLE departamentos ADD CONSTRAINT empregados_departamentos_fk
-FOREIGN KEY (id_gerente)
+
+ALTER TABLE empregados ADD CONSTRAINT fk_emp_emp FOREIGN KEY (id_supervisor)
 REFERENCES empregados (id_empregado)
 ON DELETE NO ACTION
 ON UPDATE NO ACTION
 NOT DEFERRABLE;
 
-ALTER TABLE empregados ADD CONSTRAINT empregados_empregados_fk
-FOREIGN KEY (id_supervisor)
+ALTER TABLE historico_cargos ADD CONSTRAINT fk_emp_his FOREIGN KEY (id_empregado)
 REFERENCES empregados (id_empregado)
 ON DELETE NO ACTION
 ON UPDATE NO ACTION
 NOT DEFERRABLE;
 
-ALTER TABLE historico_cargos ADD CONSTRAINT empregados_historico_cargos_fk
-FOREIGN KEY (id_empregado)
-REFERENCES empregados (id_empregado)
-ON DELETE NO ACTION
-ON UPDATE NO ACTION
-NOT DEFERRABLE;
-
-
-
-ALTER TABLE departamentos DROP CONSTRAINT empregados_departamentos_fk;
-
-
+/* inserts */
     INSERT INTO regioes (id_regiao, nome) VALUES (1, 'Europe');
     INSERT INTO regioes (id_regiao, nome) VALUES (2, 'Americas');
     INSERT INTO regioes (id_regiao, nome) VALUES (3, 'Asia');
